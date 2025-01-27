@@ -53,7 +53,7 @@ class VideoGeneratorController {
 
     async stripAudioFromVideo(videoPath) {
         const outputPath = path.join(this.tempDir, `temp_${uuidv4()}_noaudio.mp4`);
-        
+
         return new Promise((resolve, reject) => {
             ffmpeg(videoPath)
                 .outputOptions(['-c:v copy', '-an'])
@@ -69,7 +69,7 @@ class VideoGeneratorController {
 
         // Convert duration to a number if it isn't already
         const normalizedDuration = parseFloat(duration);
-        
+
         if (isNaN(normalizedDuration)) {
             throw new Error(`Invalid duration value: ${duration}`);
         }
@@ -108,23 +108,23 @@ class VideoGeneratorController {
     async generateSceneVideo(scene) {
         console.log(`🎬 Processing scene ${scene.sceneNumber}`);
         console.log(`Scene ${scene.sceneNumber} data:`, JSON.stringify(scene, null, 2));
-    
+
         // Verify files exist
         const mediaExists = await this.verifyFile(scene.media.path);
         const audioExists = scene.audio ? await this.verifyFile(scene.audio.path) : false;
-    
+
         if (!mediaExists) {
             console.error(`❌ Media file missing for scene ${scene.sceneNumber}`);
             return null;
         }
-    
+
         const outputPath = path.join(this.tempDir, `scene_${scene.sceneNumber}_final.mp4`);
         let videoPath = scene.media.path;
-        
+
         let videoDuration = 0;
         let audioDuration = 0;
         let finalDuration = 0;
-    
+
         // 1. Determine media (video/image) duration
         try {
             if (scene.media.type === 'image') {
@@ -142,7 +142,7 @@ class VideoGeneratorController {
             console.error(`❌ Error calculating media duration for scene ${scene.sceneNumber}:`, error);
             throw error;
         }
-    
+
         // 2. Determine audio duration (if audio exists)
         if (audioExists && scene.audio) {
             try {
@@ -223,7 +223,7 @@ class VideoGeneratorController {
                 // Force the final length to match finalDuration (cuts or ends the loop)
                 `-t ${finalDuration}`
             ];
-    
+
             // If we have audio, encode and keep it in sync
             if (normalizedAudioPath) {
                 outputOptions.push(
@@ -232,7 +232,7 @@ class VideoGeneratorController {
                     '-shortest'
                 );
             }
-    
+
             // Apply video filters (scaling + padding to 1920x1080)
             command
                 .outputOptions(outputOptions)
@@ -268,7 +268,6 @@ class VideoGeneratorController {
                 .run();
         });
     }
-    
 
     async processScenes(scenes) {
         console.log(`🛠️ Processing ${scenes.length} scenes...`);
